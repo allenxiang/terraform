@@ -1,6 +1,7 @@
 package httpclient
 
 import (
+	"crypto/tls"
 	"net/http"
 
 	cleanhttp "github.com/hashicorp/go-cleanhttp"
@@ -9,7 +10,11 @@ import (
 // New returns the DefaultPooledClient from the cleanhttp
 // package that will also send a Terraform User-Agent string.
 func New() *http.Client {
-	cli := cleanhttp.DefaultPooledClient()
+	transport := cleanhttp.DefaultPooledTransport()
+	transport.TLSClientConfig = &tls.Config{InsecureSkipVerify: true}
+	cli := &http.Client{
+		Transport: transport,
+	}
 	cli.Transport = &userAgentRoundTripper{
 		userAgent: UserAgentString(),
 		inner:     cli.Transport,
